@@ -26,16 +26,6 @@ public:
     void Update();
     bool IsOpen();
 
-    //Sprite& AddSpriteFromTexture(const std::string& texture_name);
-    //PartObject& AddPartFromTexture(const std::string& texture_name);
-    /*template<class Part> Part& AddPartFromTexture(const string& texture_name)
-    {
-        static_assert(std::is_base_of<PartObject, Part>::value, "Part must inherit from PartObject");
-        auto part = new Part(resources->GetTexture(texture_name));
-        this->activeBuffer->onScreenParts.push_back(part);
-        return *part;
-    }*/
-
     void AddText(const string& text_string);
     template<typename Part> Part& AddPart(float x = 0, float y = 0)
     {

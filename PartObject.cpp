@@ -50,148 +50,7 @@ void PartObject::SetColor(const Color& color) {
 PartObject::PartObject() = default;
 
 /////////// PartObject
-
-
-/*
 /////////// Component
-
-Component::Component(const string & texture_name) : PartObject(ResourceManager::Resources->GetTexture(texture_name)) {
-    this->isOn = false;
-    this->SetOrigin(0.5, 0.5);
-}
-
-void Component::Switch(bool on_off) { // change "hasSignal = on_off" to "hasSignal is equal to whether it was just pulsed or not"
-    this->isOn = on_off;
-    for(auto & pin : ioPins)
-    {
-        pin.hasSignal = on_off;
-    }
-}
-
-/////////// Component
-/////////// IOPin
-
-IOPin::IOPin(Uint8 signalCount) {
-    assert(signalCount > 0 & signalCount <= MAX_SIGNAL_COUNT);
-    this->signalCount = signalCount;
-    this->hasSignal = false;
-    this->inSignal = 0;
-    this->outSignal = 0;
-}
-
-void IOPin::SetPin(Uint8 index, IO io, bool value) {
-    assert(index < this->signalCount && this->hasSignal);
-    PIN(io, index) = value;
-}
-
-bool IOPin::GetPin(Uint8 index, IO io) {
-    assert(index < this->signalCount && this->hasSignal);
-    return PIN(io, index);
-}
-
-/////////// IOPin
-/////////// CPU
-
-CPU::CPU() : Component("cpu") {
-    canPulse = false;
-    ioPins.emplace_back(1);
-    pulseRate = Milliseconds(1000);
-    lastPulse = NOW;
-}
-
-void CPU::Update() {
-    if(this->canPulse)
-    {
-        this->Pulse(true);
-        this->canPulse = false;
-        lastPulse = HR_Clock::now();
-    } else {
-        this->Pulse(false);
-    }
-
-    if(chrono::duration_cast<Milliseconds>(NOW - lastPulse) > pulseRate)
-    {
-        this->canPulse = true;
-    }
-
-}
-
-void CPU::Pulse(bool input) {
-    SET_PIN(0, 0, IO::Out, input);
-    for(auto & component : this->pulseChain)
-    {
-        component->Pulse(input);
-    }
-}
-
-/////////// CPU
-/////////// Light Bulb
-
-LightBulb::LightBulb() : Component("light") {
-    ioPins.emplace_back(1);
-}
-
-void LightBulb::Update() {
-    if(this->isOn)
-    {
-        if(GET_PIN(0, 0, IO::In))
-        {
-            SET_PIN(0, 0, IO::Out, true);
-            this->SetColor(Color::Yellow);
-        }
-        else
-        {
-            SET_PIN(0, 0, IO::Out, false);
-            this->SetColor(Color::White);
-        }
-    }
-}
-
-void LightBulb::Pulse(bool input) {
-    if(this->isOn)
-    {
-        SET_PIN(0, 0, IO::In, input);
-    }
-}
-
-/////////// Light Bulb
-*/
-
-/*
- * Note: CPU & Output are also components
- *
- * --> Component -> Component -> Component ------>
- * |                                             |
- * CPU -> Component -> Component -->             |
- * |                               |             |
- * --> Component -> Component --> Component -> Component -> Output
- * |                                             |
- * --> Component -> Component -> Component ------>
- *
- *
- *
- * CPU sends signal
- * Component receives signal
- *
- * Component handles signal
- *
- * Component sends signal
- * Other Component receives signal
- *
- *
- * Sending signal will send all the OUT pins
- * Receives signal will ping all IN pins
- * Handling signal uses those IN pins and creates the OUT pin signal
- * Loop send, receive and handle
- *
- *
- * void Send(component) => component.Receive(OutPins)
- * void Receive() => this.setInPins
- * void Handle() => this.useInPins, this.setOutPins
- * Send -> Receive -> Handle -> Send to next component in chain
- *
- */
-
 Component::Component(const string & texture_name) : PartObject(ResourceManager::Resources->GetTexture(texture_name)) {
     this->SetOrigin(0.5, 0.5);
     this->receivedSignal = false;
@@ -230,6 +89,9 @@ void Component::Handle() {
     this->Send();
 }
 
+/////////// Component
+/////////// CPU
+
 CPU::CPU() : Component("cpu") {
     canPulse = false;
     pulseRate = Milliseconds(1000);
@@ -258,6 +120,9 @@ void CPU::Handle() {
     Component::Handle();
 }
 
+/////////// CPU
+/////////// LightBulb
+
 LightBulb::LightBulb() : Component("light") {
     InPins.push_back(0);
     OutPins.push_back(0);
@@ -280,6 +145,9 @@ void LightBulb::Handle() {
     Component::Handle();
 }
 
+/////////// LightBulb
+/////////// NOT Gate
+
 NotLogicGate::NotLogicGate() : Component("inverter") {
     InPins.push_back(0);
     OutPins.push_back(0);
@@ -293,3 +161,5 @@ void NotLogicGate::Handle() {
     OutPins[0] = !InPins[0];
     Component::Handle();
 }
+
+/////////// NOT Gate

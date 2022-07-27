@@ -75,70 +75,38 @@ public:
 };
 
 /*
-#define MAX_SIGNAL_COUNT 8
-
-#define PIN(io, index) *((io == IO::In ? (Uint8*)&this->inSignal : (Uint8*)&this->outSignal) + index)
-
-enum IO
-{
-    In,
-    Out
-};
-
-struct IOPin {
-    Uint8 signalCount;
-    bool hasSignal;
-    Uint64 inSignal;
-    Uint64 outSignal;
-
-    IOPin() = delete;
-    explicit IOPin(Uint8 signalCount);
-
-    void SetPin(Uint8 index, IO io, bool value);
-    bool GetPin(Uint8 index, IO io);
-};
-
-#define GET_PIN(vector_index, pin_index, io) this->ioPins[vector_index].GetPin(pin_index, io)
-#define SET_PIN(vector_index, pin_index, io, value) this->ioPins[vector_index].SetPin(pin_index, io, value)
-
-typedef chrono::high_resolution_clock HR_Clock;
-typedef chrono::high_resolution_clock::time_point TimePoint;
-typedef chrono::milliseconds Milliseconds;
-
-#define NOW HR_Clock::now()
-
-class Component : public PartObject {
-public:
-    void Switch(bool on_off);
-protected:
-    explicit Component(const string& texture_name);
-    bool isOn;
-    vector<IOPin> ioPins;
-};
-
-class CPU : public Component {
-public:
-    CPU();
-    void Update() override;
-    void Pulse(bool input) override;
-    template<typename _Comp> void AddPartToChain(_Comp* component)
-    {
-        static_assert(std::is_base_of<Component, _Comp>::value, "_Comp must inherit from Component.");
-        pulseChain.push_back(component);
-    }
-private:
-    bool canPulse;
-    vector<Component*> pulseChain;
-    Milliseconds pulseRate;
-    TimePoint lastPulse;
-};
-
-class LightBulb : public Component {
-public:
-    LightBulb();
-    void Update() override;
-    void Pulse(bool input) override;
-};
-*/
+ * Note: CPU & Output are also components
+ *
+ * --> Component -> Component -> Component ------>
+ * |                                             |
+ * CPU -> Component -> Component -->             |
+ * |                               |             |
+ * --> Component -> Component --> Component -> Component -> Output
+ * |                                             |
+ * --> Component -> Component -> Component ------>
+ *
+ *
+ *
+ * CPU sends signal
+ * Component receives signal
+ *
+ * Component handles signal
+ *
+ * Component sends signal
+ * Other Component receives signal
+ *
+ *
+ * Sending signal will send all the OUT pins
+ * Receives signal will ping all IN pins
+ * Handling signal uses those IN pins and creates the OUT pin signal
+ * Loop send, receive and handle
+ *
+ *
+ * void Send(component) => component.Receive(OutPins)
+ * void Receive() => this.setInPins
+ * void Handle() => this.useInPins, this.setOutPins
+ * Send -> Receive -> Handle -> Send to next component in chain
+ *
+ */
 
 #endif //CLIONUNTITLED_PARTOBJECT_H
